@@ -9,7 +9,9 @@ local volumes = {
 plyState = LocalPlayer.state
 local micClicks = true
 playerServerId = GetPlayerServerId(PlayerId())
-radioEnabled, radioPressed, mode, radioChannel, callChannel = false, false, 2, 0, 0
+
+-- @ENCORE: Default radio enabled to true so we don't have to set user preferences.
+radioEnabled, radioPressed, mode, radioChannel, callChannel = true, false, 2, 0, 0
 
 radioData = {}
 callData = {}
@@ -19,14 +21,16 @@ AddEventHandler('pma-voice:settingsCallback', function(cb)
 	cb(Cfg)
 end)
 
+-- @ENCORE: We manually control this with our own resources and use the export provided.
+
 -- TODO: Better implementation of this?
-RegisterCommand('vol', function(_, args)
-	if not args[1] then return end
-	local volume = tonumber(args[1])
-	if volume then
-		setVolume(volume / 100)
-	end
-end)
+-- RegisterCommand('vol', function(_, args)
+-- 	if not args[1] then return end
+-- 	local volume = tonumber(args[1])
+-- 	if volume then
+-- 		setVolume(volume / 100)
+-- 	end
+-- end)
 
 --- function setVolume
 --- Toggles the players volume
@@ -443,4 +447,10 @@ end)
 AddEventHandler('mumbleDisconnected', function(address)
 	logger.log('Disconnected from mumble server with address of %s', GetConvarInt('voice_hideEndpoints', 1) == 1 and 'HIDDEN' or address)
 	currentGrid = -1
+end)
+
+AddEventHandler('pma-voice:encore:showUi', function(isVisible)
+    SendNUIMessage({
+        visible = isVisible,
+    })
 end)
