@@ -34,9 +34,6 @@ export default {
             talking: false,
         });
 
-        // stops from toggling voice at the end of talking
-        let usingUpdated = false;
-
         window.addEventListener("message", function(event) {
             const data = event.data;
 
@@ -83,16 +80,19 @@ export default {
             }
 
             if (data.usingRadio !== voice.usingRadio) {
-                usingUpdated     = true;
                 voice.usingRadio = data.usingRadio;
 
-                setTimeout(function(){
-                    usingUpdated = false
-                }, 100);
+                if (voice.usingRadio) {
+                    voice.talking = true;
+                }
             }
-            
-            if ((data.talking !== undefined) && !voice.usingRadio && !usingUpdated) {
+
+            if (data.talking !== undefined) {
                 voice.talking = data.talking;
+
+                if (!voice.talking) {
+                    voice.usingRadio = false;
+                }
             }
 
             if (data.sound && voice.radioEnabled) {
