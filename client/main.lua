@@ -1,3 +1,6 @@
+-- @ENCORE
+local whisperForced = false
+
 local Cfg = Cfg
 local currentGrid = 0
 -- we can't use GetConvarInt because its not a integer, and theres no way to get a float... so use a hacky way it is!
@@ -179,6 +182,12 @@ local playerMuted = false
 RegisterCommand('+cycleproximity', function()
 	if GetConvarInt('voice_enableProximity', 1) ~= 1 then return end
 	if playerMuted then return end
+
+    if whisperForced then
+        TriggerEvent('erp:showNotification', 'You are currently in a whisper-only area.')
+
+        return
+    end
 
 	local voiceMode = mode
 	local newMode = voiceMode + 1
@@ -453,4 +462,50 @@ AddEventHandler('pma-voice:encore:showUi', function(isVisible)
     SendNUIMessage({
         visible = isVisible,
     })
+end)
+
+
+
+
+
+
+-- @ENCORE
+Citizen.CreateThread(function()
+    local whisperOnlyZone = ComboZone:Create({
+        PolyZone:Create(Cfg.WhisperZones[1].Zone, {
+            name = 'pma-voice:whisperOnlyZone:1',
+            minZ = Cfg.WhisperZones[1].MinZ,
+            maxZ = Cfg.WhisperZones[1].MaxZ,
+        }),
+        PolyZone:Create(Cfg.WhisperZones[2].Zone, {
+            name = 'pma-voice:whisperOnlyZone:2',
+            minZ = Cfg.WhisperZones[2].MinZ,
+            maxZ = Cfg.WhisperZones[2].MaxZ,
+        }),
+    }, {name = 'pma-voice:whisperOnlyZone'})
+
+    whisperOnlyZone:onPlayerInOut(function(isInside, point, zone)
+        whisperForced = isInside
+
+        if whisperForced then
+            local voiceMode     = 1
+            local voiceModeData = Cfg.voiceModes[voiceMode]
+
+            MumbleSetAudioInputDistance(voiceModeData[1] + 0.0)
+
+            mode = voiceMode
+
+            plyState:set('proximity', {
+                index    = voiceMode,
+                distance = voiceModeData[1],
+                mode     = voiceModeData[2],
+            }, GetConvarInt('voice_syncData', 0) == 1)
+
+            SendNUIMessage({
+                voiceMode = voiceMode - 1
+            })
+
+            TriggerEvent('pma-voice:setTalkingMode', voiceMode)
+        end
+    end)
 end)
