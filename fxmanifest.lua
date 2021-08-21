@@ -9,6 +9,9 @@ lua54 'yes'
 shared_script 'shared.lua'
 
 client_scripts {
+    '@PolyZone/client.lua',
+    '@PolyZone/ComboZone.lua',
+
     'client/**/*.lua',
 }
 
