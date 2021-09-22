@@ -1,5 +1,7 @@
 -- @ENCORE
-local whisperForced = false
+local inProperty      = false
+local inObnoxiousZone = false
+local whisperForced   = false
 
 local Cfg = Cfg
 local currentGrid = 0
@@ -191,6 +193,12 @@ RegisterCommand('+cycleproximity', function()
 
 	local voiceMode = mode
 	local newMode = voiceMode + 1
+
+    if newMode == 4 then
+        if not inProperty and not inObnoxiousZone then
+            newMode = 1
+        end
+    end
 
 	voiceMode = (newMode <= #Cfg.voiceModes and newMode) or 1
 	local voiceModeData = Cfg.voiceModes[voiceMode]
@@ -508,4 +516,85 @@ Citizen.CreateThread(function()
             TriggerEvent('pma-voice:setTalkingMode', voiceMode)
         end
     end)
+
+    local obnoxiousZone = ComboZone:Create({
+        PolyZone:Create(Cfg.ObnoxiousZones[1].Zone, {
+            name = 'pma-voice:obnoxiousZone:1',
+            minZ = Cfg.ObnoxiousZones[1].MinZ,
+            maxZ = Cfg.ObnoxiousZones[1].MaxZ,
+        }),
+        PolyZone:Create(Cfg.ObnoxiousZones[2].Zone, {
+            name = 'pma-voice:obnoxiousZone:2',
+            minZ = Cfg.ObnoxiousZones[2].MinZ,
+            maxZ = Cfg.ObnoxiousZones[2].MaxZ,
+        }),
+    }, {name = 'pma-voice:obnoxiousZone'})
+
+    obnoxiousZone:onPlayerInOut(function(isInside, point, zone)
+        inObnoxiousZone = isInside
+
+        local voiceMode = mode
+
+        if inObnoxiousZone then
+            voiceMode = 4
+        else
+            if voiceMode == 4 then
+                voiceMode = 3
+            end
+        end
+
+        voiceModeData = Cfg.voiceModes[voiceMode]
+
+        MumbleSetAudioInputDistance(voiceModeData[1] + 0.0)
+
+        plyState:set('proximity', {
+            index    = voiceMode,
+            distance = voiceModeData[1],
+            mode     = voiceModeData[2],
+        }, GetConvarInt('voice_syncData', 0) == 1)
+
+        mode = voiceMode
+
+        SendNUIMessage({
+            voiceMode = voiceMode - 1
+        })
+
+        TriggerEvent('pma-voice:setTalkingMode', voiceMode)
+    end)
+end)
+
+AddEventHandler('erp_realestate:inProperty', function()
+    inProperty = true
+end)
+
+AddEventHandler('erp_realestate:leftProperty', function()
+    inProperty = false
+
+    local voiceMode = mode
+
+    if voiceMode ~= 4 then
+        return
+    end
+
+    voiceMode = 3
+
+    voiceModeData = Cfg.voiceModes[voiceMode]
+
+    MumbleSetAudioInputDistance(voiceModeData[1] + 0.0)
+
+    plyState:set('proximity', {
+        index    = voiceMode,
+        distance = voiceModeData[1],
+        mode     = voiceModeData[2],
+    }, GetConvarInt('voice_syncData', 0) == 1)
+
+    mode = voiceMode
+
+    SendNUIMessage({
+        voiceMode = voiceMode - 1
+    })
+
+    TriggerEvent('pma-voice:setTalkingMode', voiceMode)
+
+
 end)

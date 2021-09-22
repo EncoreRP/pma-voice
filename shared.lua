@@ -6,13 +6,15 @@ if GetConvar('voice_useNativeAudio', 'false') == 'true' then
 	Cfg.voiceModes = {
 		{1.0, "Whisper"}, -- Whisper speech distance in gta distance units
 		{2.3, "Normal"}, -- Normal speech distance in gta distance units
-		{5.0, "Shouting"} -- Shout speech distance in gta distance units
+		{5.0, "Shouting"}, -- Shout speech distance in gta distance units
+        {15.0, "Obnoxious"},
 	}
 else
 	Cfg.voiceModes = {
 		{3.0, "Whisper"}, -- Whisper speech distance in gta distance units
 		{7.0, "Normal"}, -- Normal speech distance in gta distance units
-		{15.0, "Shouting"} -- Shout speech distance in gta distance units
+		{15.0, "Shouting"}, -- Shout speech distance in gta distance units
+        {45.0, "Obnoxious"},
 	}
 end
 
@@ -41,9 +43,33 @@ Cfg.WhisperZones = {
     },
 }
 
-
-
-
+Cfg.ObnoxiousZones = {
+    [1] = { -- Courtroom
+        MinZ = 59.0,
+        MaxZ = 67.0,
+        Zone = {
+            vector2(330.19345092773, -1624.8427734375),
+            vector2(319.68203735352, -1637.2548828125),
+            vector2(315.74005126953, -1633.6926269531),
+            vector2(315.93069458008, -1631.9177246094),
+            vector2(314.34649658203, -1630.0723876953),
+            vector2(322.20581054688, -1620.2344970703),
+            vector2(325.38845825195, -1620.9140625),
+        },
+    },
+    [2] = { -- Church
+        MinZ = -17.0,
+        MaxZ = -11.0,
+        Zone = {
+            vector2(-787.29486083984, -36.8752784729),
+            vector2(-769.17199707031, -30.416641235352),
+            vector2(-767.96893310547, -33.233966827393),
+            vector2(-772.44110107422, -36.905265808105),
+            vector2(-772.07183837891, -40.962478637695),
+            vector2(-778.64086914062, -43.570644378662)
+        }
+    },
+}
 
 logger = {
 	['log'] = function(message, ...)
